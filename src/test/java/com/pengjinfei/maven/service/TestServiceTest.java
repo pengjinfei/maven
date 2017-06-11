@@ -14,7 +14,7 @@ public class TestServiceTest {
     @Test
     public void add() throws Exception {
         int add = testService.add(1, 2);
-        Assert.assertEquals(4,add);
+        Assert.assertEquals(3,add);
     }
 
 }
