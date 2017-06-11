@@ -21,6 +21,10 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 
+    /**
+     * simple hello controller.
+     * @return "hello"
+     */
     @GetMapping("/hello")
     public String sayHello() {
         return "hello";
