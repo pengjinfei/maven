@@ -2,9 +2,7 @@
 <Configuration status="WARN">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT" follow="true">
-            <PatternLayout>
-                <pattern>%d [%p] [%C{1.}] [%t] %m%n</pattern>
-            </PatternLayout>
+            <PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] [%X{mdc}] - %l - %m%n"/>
         </Console>
     </Appenders>
     <Loggers>

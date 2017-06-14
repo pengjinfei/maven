@@ -1,7 +1,10 @@
 package com.pengjinfei.maven;
 
+import com.pengjinfei.maven.dto.Product;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -10,7 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
  * Description:
  */
 @SpringBootApplication
+@EnableAspectJAutoProxy
 @RestController
+@Slf4j
 public class Application {
 
     /**
@@ -26,8 +31,11 @@ public class Application {
      * @return "hello"
      */
     @GetMapping("/hello")
-    public String sayHello() {
-        return "hello";
+    public Product sayHello() {
+        Product product=new Product();
+        product.setName("hello");
+        log.info("product = {}",product);
+        return product;
     }
 
 }
