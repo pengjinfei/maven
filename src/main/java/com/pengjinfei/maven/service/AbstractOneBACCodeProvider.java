@@ -8,7 +8,8 @@ package com.pengjinfei.maven.service;
 public abstract class AbstractOneBACCodeProvider extends AbstractBatchAsyncCacheableCodeProvider implements OneBACCodeProvider {
     @Override
     public void loadCache() {
-        for (int i = 0; i < getTimes(); i++) {
+        long times = getTimes();
+        for (int i = 0; i < times; i++) {
             for (int j = 0; j < getBatchSize(); j++) {
                 String s = doGetOne();
                 redisTemplate.opsForList().rightPush(getRedisKey(), s);

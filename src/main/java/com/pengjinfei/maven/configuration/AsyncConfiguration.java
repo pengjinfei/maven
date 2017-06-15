@@ -1,7 +1,9 @@
 package com.pengjinfei.maven.configuration;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -16,6 +18,8 @@ import java.util.concurrent.Executor;
  * @author Pengjinfei
  */
 @EnableAsync
+@Configuration
+@Slf4j
 public class AsyncConfiguration implements AsyncConfigurer {
 
     @Override

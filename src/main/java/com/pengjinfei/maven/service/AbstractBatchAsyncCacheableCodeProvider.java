@@ -4,6 +4,8 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * Created on 6/15/17
  *
@@ -15,6 +17,12 @@ public abstract class AbstractBatchAsyncCacheableCodeProvider implements BatchAs
     protected StringRedisTemplate redisTemplate;
 
     private String beanName;
+
+    int BATCH_SIZE = 10;
+
+    int BATCH_NUM = 5;
+
+    String POSION = "I'm posion";
 
 
     StringRedisTemplate getRedisTemplate() {
@@ -38,6 +46,21 @@ public abstract class AbstractBatchAsyncCacheableCodeProvider implements BatchAs
     @Override
     public int getBatchNum() {
         return BATCH_NUM;
+    }
+
+    @Override
+    public String getCodeByCache() {
+        return redisTemplate.opsForList().leftPop(getRedisKey());
+    }
+
+    @Override
+    public String getCodeByCacheBlocked(long time, TimeUnit unit) {
+        return redisTemplate.opsForList().leftPop(getRedisKey(), time, unit);
+    }
+
+    @Override
+    public boolean isPosion(String code) {
+        return POSION.equals(code);
     }
 
     protected long getTimes() {
