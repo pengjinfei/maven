@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Created by Pengjinfei on 6/4/17.
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class Application {
 
+    @Autowired
+    RestTemplate restTemplate;
     @Autowired
     ProductCodeService productCodeService;
 
@@ -46,6 +49,11 @@ public class Application {
     @GetMapping("/code")
     public String code() {
        return productCodeService.getCode();
+    }
+
+    @GetMapping("/rest")
+    public String rest() {
+        return restTemplate.getForObject("http://localhost:8000/test", String.class);
     }
 
 }

@@ -17,4 +17,11 @@ public class TestServiceTest {
         Assert.assertEquals(3,add);
     }
 
+    @Test
+    public void properties() {
+        String file = "context.properties";
+        int i = file.lastIndexOf(46);
+        System.out.println(i);
+    }
+
 }
