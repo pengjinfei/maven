@@ -1,7 +1,11 @@
 package com.pengjinfei.maven.service;
 
+import com.pengjinfei.maven.dto.Product;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
@@ -13,12 +17,13 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @Slf4j
-public class ProductCodeService {
+public class ProductCodeService implements ApplicationContextAware{
 
     @Autowired
-    AsyncCacheableCodeProvider asyncCacheableCodeProvider;
+    private ApplicationContext applicationContext;
 
-    public String getCode() {
+    public String getCode(Product product) {
+        AsyncCacheableCodeProvider asyncCacheableCodeProvider = applicationContext.getBean(product.getCodeProvider(), AsyncCacheableCodeProvider.class);
         String codeByCache = asyncCacheableCodeProvider.getCodeByCache();
         if (codeByCache == null) {
             asyncCacheableCodeProvider.loadCache();
@@ -29,5 +34,10 @@ public class ProductCodeService {
             return asyncCacheableCodeProvider.getCodeByCache();
         }
         return codeByCache;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }
