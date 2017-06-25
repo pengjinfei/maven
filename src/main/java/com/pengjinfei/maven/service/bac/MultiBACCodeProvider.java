@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.service;
+package com.pengjinfei.maven.service.bac;
 
 import java.util.List;
 
@@ -9,5 +9,5 @@ import java.util.List;
  */
 public interface MultiBACCodeProvider extends BatchAsyncCacheableCodeProvider{
 
-    List<String> doGetMulti();
+    List<String> doGetMulti(Integer thirdpartyCode);
 }

@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.service;
+package com.pengjinfei.maven.service.bac;
 
 /**
  * Created on 6/15/17
@@ -7,5 +7,5 @@ package com.pengjinfei.maven.service;
  */
 public interface OneBACCodeProvider extends BatchAsyncCacheableCodeProvider{
 
-    String doGetOne();
+    String doGetOne(Integer thirdpartyCode);
 }

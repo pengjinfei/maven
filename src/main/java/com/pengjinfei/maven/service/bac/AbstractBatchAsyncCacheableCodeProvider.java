@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.service;
+package com.pengjinfei.maven.service.bac;
 
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +39,8 @@ public abstract class AbstractBatchAsyncCacheableCodeProvider implements BatchAs
         this.beanName = s;
     }
 
-    protected String getRedisKey() {
-        return "token:" + this.beanName;
+    protected String getRedisKey(Integer thirdpartyCode) {
+        return "token:" + this.beanName+"_"+thirdpartyCode;
     }
 
     @Override
@@ -49,13 +49,13 @@ public abstract class AbstractBatchAsyncCacheableCodeProvider implements BatchAs
     }
 
     @Override
-    public String getCodeByCache() {
-        return redisTemplate.opsForList().leftPop(getRedisKey());
+    public String getCodeByCache(Integer thirdpartyCode) {
+        return redisTemplate.opsForList().leftPop(getRedisKey(thirdpartyCode));
     }
 
     @Override
-    public String getCodeByCacheBlocked(long time, TimeUnit unit) {
-        return redisTemplate.opsForList().leftPop(getRedisKey(), time, unit);
+    public String getCodeByCacheBlocked(Integer thirdpartyCode, TimeUnit unit, long time) {
+        return redisTemplate.opsForList().leftPop(getRedisKey(thirdpartyCode), time, unit);
     }
 
     @Override
@@ -63,8 +63,8 @@ public abstract class AbstractBatchAsyncCacheableCodeProvider implements BatchAs
         return POSION.equals(code);
     }
 
-    protected long getTimes() {
-        Long size = redisTemplate.opsForList().size(getRedisKey());
+    protected long getTimes(Integer thirdpartyCode) {
+        Long size = redisTemplate.opsForList().size(getRedisKey(thirdpartyCode));
         int batchNum = getBatchNum();
         int batchSize = getBatchSize();
         int maxSize = batchNum * (batchSize + 1);

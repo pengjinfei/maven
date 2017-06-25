@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.service;
+package com.pengjinfei.maven.service.bac;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
@@ -11,13 +11,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class OneSleepBACCodeProvider extends AbstractOneBACCodeProvider {
     @Override
-    public String doGetOne() {
+    public String doGetOne(Integer thirdpartyCode) {
         String s = RandomStringUtils.randomAlphabetic(10);
         try {
             Thread.sleep(1000L);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return s;
+        return s+"_"+thirdpartyCode;
     }
 }

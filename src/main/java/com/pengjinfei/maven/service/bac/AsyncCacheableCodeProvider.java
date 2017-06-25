@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.service;
+package com.pengjinfei.maven.service.bac;
 
 import org.springframework.scheduling.annotation.Async;
 
@@ -11,11 +11,11 @@ import java.util.concurrent.TimeUnit;
 public interface AsyncCacheableCodeProvider {
 
     @Async
-    void loadCache();
+    void loadCache(Integer thirdpartyCode);
 
-    String getCodeByCache();
+    String getCodeByCache(Integer thirdpartyCode);
 
-    String getCodeByCacheBlocked(long time, TimeUnit unit);
+    String getCodeByCacheBlocked(Integer thirdpartyCode, TimeUnit unit, long time);
 
     boolean isPosion(String code);
 }

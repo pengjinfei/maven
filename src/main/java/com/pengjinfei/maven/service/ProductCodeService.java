@@ -1,6 +1,7 @@
 package com.pengjinfei.maven.service;
 
-import com.pengjinfei.maven.dto.Product;
+import com.pengjinfei.maven.entity.ThirdPartyProduct;
+import com.pengjinfei.maven.service.bac.AsyncCacheableCodeProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,16 +23,17 @@ public class ProductCodeService implements ApplicationContextAware{
     @Autowired
     private ApplicationContext applicationContext;
 
-    public String getCode(Product product) {
-        AsyncCacheableCodeProvider asyncCacheableCodeProvider = applicationContext.getBean(product.getCodeProvider(), AsyncCacheableCodeProvider.class);
-        String codeByCache = asyncCacheableCodeProvider.getCodeByCache();
+    public String getCode(ThirdPartyProduct product) {
+        AsyncCacheableCodeProvider asyncCacheableCodeProvider = applicationContext.getBean(product.getCodeServiceName(), AsyncCacheableCodeProvider.class);
+        Integer thirdpartyCode = product.getThirdpartyCode();
+        String codeByCache = asyncCacheableCodeProvider.getCodeByCache(product.getThirdpartyCode());
         if (codeByCache == null) {
-            asyncCacheableCodeProvider.loadCache();
-            return asyncCacheableCodeProvider.getCodeByCacheBlocked(3, TimeUnit.SECONDS);
+            asyncCacheableCodeProvider.loadCache(product.getThirdpartyCode());
+            return asyncCacheableCodeProvider.getCodeByCacheBlocked(thirdpartyCode, TimeUnit.SECONDS, 3);
         }
         if (asyncCacheableCodeProvider.isPosion(codeByCache)) {
-            asyncCacheableCodeProvider.loadCache();
-            return asyncCacheableCodeProvider.getCodeByCache();
+            asyncCacheableCodeProvider.loadCache(thirdpartyCode);
+            return asyncCacheableCodeProvider.getCodeByCache(thirdpartyCode);
         }
         return codeByCache;
     }
