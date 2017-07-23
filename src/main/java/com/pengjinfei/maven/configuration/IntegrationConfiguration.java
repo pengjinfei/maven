@@ -3,7 +3,6 @@ package com.pengjinfei.maven.configuration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.integration.aop.CompoundTriggerAdvice;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.dsl.core.Pollers;
 import org.springframework.integration.redis.store.RedisChannelMessageStore;
@@ -34,14 +33,14 @@ public class IntegrationConfiguration {
         return new QueueChannel(queue);
     }
 
-   @Bean
+    @Bean
     public PollerMetadata retryPoller() {
-        CronTrigger primary= new CronTrigger("0/3 * * * * *");
-        CronTrigger  secondary= new CronTrigger("0 */1 * * * *");
+        CronTrigger primary = new CronTrigger("0/3 * * * * *");
+        CronTrigger secondary= new CronTrigger("0 */1 * * * *");
         CompoundTrigger compoundTrigger = new CompoundTrigger(primary);
         return Pollers.trigger(compoundTrigger)
                 //.maxMessagesPerPoll(10)
-                .advice(new CompoundTriggerAdvice(compoundTrigger, secondary))
+                .advice(new MyCompoundTriggerAdvice(compoundTrigger, secondary))
                 .get();
     }
 
@@ -51,3 +50,4 @@ public class IntegrationConfiguration {
         return new QueueChannel(queue);
     }
 }
+
