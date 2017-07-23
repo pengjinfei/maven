@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.service;
+package com.pengjinfei.maven.service.bac;
 
 import com.pengjinfei.maven.entity.ThirdPartyMerchantCode;
 import com.pengjinfei.maven.entity.ThirdPartyProduct;
