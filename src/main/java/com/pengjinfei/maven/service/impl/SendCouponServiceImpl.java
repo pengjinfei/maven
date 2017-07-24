@@ -43,8 +43,10 @@ public class SendCouponServiceImpl implements SendCouponService {
             poller = {
                     @Poller("retryPoller")
             })
-    @Async
+    //@Async
     public void retrySendCoupon(CouponSendDto couponSendDto) {
-        log.info("retry send coupon success. {}", couponSendDto);
+        System.out.println(couponSendDto);
+        throw new RuntimeException("test failed");
+        //log.info("retry send coupon success. {}", couponSendDto);
     }
 }

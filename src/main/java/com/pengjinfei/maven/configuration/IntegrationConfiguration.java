@@ -28,26 +28,64 @@ public class IntegrationConfiguration {
     }
 
     @Bean
+    public ChannelMessageStore retryStore(RedisConnectionFactory connectionFactory) {
+        RedisZsetMessageStore store = new RedisZsetMessageStore(connectionFactory);
+        //store.setValueSerializer(new FstSerializer());
+        return store;
+    }
+
+    @Bean
+    public MyCompoundTriggerAdvice retryAdvice(RedisConnectionFactory connectionFactory) {
+        CronTrigger primary = new CronTrigger("0/3 * * * * *");
+        CronTrigger secondary= new CronTrigger("0 */1 * * * *");
+        CompoundTrigger compoundTrigger = new CompoundTrigger(primary);
+        MyCompoundTriggerAdvice advice = new MyCompoundTriggerAdvice(compoundTrigger, secondary);
+        advice.setRetryInterval(1);
+        advice.setMaxRetryTimes(5);
+        return advice;
+    }
+
+    @Bean
     public QueueChannel normSendChannel(RedisConnectionFactory connectionFactory) {
         MessageGroupQueue queue = new MessageGroupQueue(store(connectionFactory), "normSendChannel");
         return new QueueChannel(queue);
     }
 
     @Bean
-    public PollerMetadata retryPoller() {
-        CronTrigger primary = new CronTrigger("0/3 * * * * *");
-        CronTrigger secondary= new CronTrigger("0 */1 * * * *");
-        CompoundTrigger compoundTrigger = new CompoundTrigger(primary);
-        return Pollers.trigger(compoundTrigger)
-                //.maxMessagesPerPoll(10)
-                .advice(new MyCompoundTriggerAdvice(compoundTrigger, secondary))
+    public PollerMetadata retryPoller(RedisConnectionFactory connectionFactory) {
+        MyCompoundTriggerAdvice advice = retryAdvice(connectionFactory);
+        return Pollers.trigger(advice.getCompoundTrigger())
+                .maxMessagesPerPoll(10)
+                .advice(advice)
                 .get();
     }
 
     @Bean
-    QueueChannel retrySendChannel(RedisConnectionFactory connectionFactory) {
-        MessageGroupQueue queue = new MessageGroupQueue(store(connectionFactory), "retrySendChannel");
-        return new QueueChannel(queue);
+    public QueueChannel retrySendChannel(RedisConnectionFactory connectionFactory) {
+        MessageGroupQueue queue = new MessageGroupQueue(retryStore(connectionFactory), "retrySendChannel");
+        QueueChannel channel = new QueueChannel(queue);
+        channel.addInterceptor(retryAdvice(connectionFactory));
+        return channel;
     }
+
+   /* @Bean
+    public RequestHandlerRetryAdvice retryAdvice(RedisConnectionFactory connectionFactory) {
+        RequestHandlerRetryAdvice advice = new RequestHandlerRetryAdvice();
+        advice.setRecoveryCallback(new ErrorMessageSendingRecoverer(retrySendChannel(connectionFactory)));
+
+        RetryTemplate template=new RetryTemplate();
+        template.setRetryPolicy(new SimpleRetryPolicy(3));
+
+        ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
+        backOffPolicy.setInitialInterval(1000);
+        backOffPolicy.setMultiplier(2.0);
+        backOffPolicy.setMaxInterval(40000);
+
+        template.setBackOffPolicy(backOffPolicy);
+
+        advice.setRetryTemplate(template);
+        return advice;
+    }*/
+
 }
 
