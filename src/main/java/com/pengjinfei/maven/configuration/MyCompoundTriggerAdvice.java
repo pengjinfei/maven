@@ -15,6 +15,9 @@ import org.springframework.scheduling.Trigger;
 import org.springframework.util.Assert;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static com.pengjinfei.maven.dto.Constants.RETRY_HANDLE_DATE;
 import static com.pengjinfei.maven.dto.Constants.RETRY_TIMES;
@@ -90,6 +93,11 @@ public class MyCompoundTriggerAdvice extends ChannelInterceptorAdapter implement
             return null;
         }
         MessageHeaders headers = message.getHeaders();
+        Set<Map.Entry<String, Object>> entries = headers.entrySet();
+        Map map = new HashMap();
+        for (Map.Entry<String, Object> entry : entries) {
+            map.put(entry.getKey(), entry.getValue());
+        }
         Long time = (Long) headers.get(RETRY_HANDLE_DATE);
         if (time != null && retryInterval > 0) {
             Calendar calendar = Calendar.getInstance();

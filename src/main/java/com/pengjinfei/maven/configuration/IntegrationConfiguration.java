@@ -23,14 +23,14 @@ public class IntegrationConfiguration {
     @Bean
     public ChannelMessageStore store(RedisConnectionFactory connectionFactory) {
         RedisChannelMessageStore store = new RedisChannelMessageStore(connectionFactory);
-        store.setValueSerializer(new FstSerializer());
+        store.setValueSerializer(ProtoRedisSerializer.getInstance());
         return store;
     }
 
     @Bean
     public ChannelMessageStore retryStore(RedisConnectionFactory connectionFactory) {
         RedisZsetMessageStore store = new RedisZsetMessageStore(connectionFactory);
-        //store.setValueSerializer(new FstSerializer());
+        store.setValueSerializer(ProtoRedisSerializer.getInstance());
         return store;
     }
 

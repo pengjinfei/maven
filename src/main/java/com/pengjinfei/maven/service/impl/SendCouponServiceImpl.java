@@ -43,7 +43,6 @@ public class SendCouponServiceImpl implements SendCouponService {
             poller = {
                     @Poller("retryPoller")
             })
-    //@Async
     public void retrySendCoupon(CouponSendDto couponSendDto) {
         System.out.println(couponSendDto);
         throw new RuntimeException("test failed");

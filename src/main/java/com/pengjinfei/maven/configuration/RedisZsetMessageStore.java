@@ -11,6 +11,7 @@ import org.springframework.integration.store.ChannelMessageStore;
 import org.springframework.integration.store.MessageGroup;
 import org.springframework.integration.store.MessageGroupFactory;
 import org.springframework.integration.store.SimpleMessageGroupFactory;
+import org.springframework.integration.support.MutableMessageHeaders;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -92,6 +93,9 @@ public class RedisZsetMessageStore implements ChannelMessageStore, BeanNameAware
     @Override
     public MessageGroup addMessageToGroup(Object groupId, Message<?> message) {
         MessageHeaders headers = message.getHeaders();
+        if (!(headers instanceof MutableMessageHeaders)) {
+            headers = new MutableMessageHeaders(headers);
+        }
         Integer times = ((Integer) headers.get(RETRY_TIMES));
         long score;
         long timeInMillis = Calendar.getInstance().getTimeInMillis();

@@ -5,6 +5,7 @@ import com.pengjinfei.maven.enu.Sender;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Created on 7/23/17
@@ -18,4 +19,5 @@ public class CouponSendDto implements Serializable{
     private String orgCode;
     private Sender sender;
     private JSONObject context;
+    private String magic= UUID.randomUUID().toString();
 }
