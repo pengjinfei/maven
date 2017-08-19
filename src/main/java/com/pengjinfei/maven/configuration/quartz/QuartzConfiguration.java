@@ -57,7 +57,7 @@ public class QuartzConfiguration {
     @Bean
     public CronTriggerFactoryBean testQuartzTrigger() throws Exception{
         CronTriggerFactoryBean factoryBean = new CronTriggerFactoryBean();
-        factoryBean.setCronExpression("0/10 * * * * ?");
+        factoryBean.setCronExpression("0/15 * * * * ?");
         factoryBean.setJobDetail(testQuartzJobDetail());
         factoryBean.setName("testQuartzTrigger");
         return factoryBean;
