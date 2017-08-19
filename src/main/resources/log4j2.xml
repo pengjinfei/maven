@@ -3,7 +3,7 @@
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT" follow="true">
             <!--<PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] [%X{mdc}] - %m%n"/>-->
-            <PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] [%X{mdc}] - %l - %m%n"/>
+            <PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] [%X{id}][%X{user}]-%c{1.}-%L-%m%n"/>
         </Console>
     </Appenders>
     <Loggers>

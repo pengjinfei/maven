@@ -1,11 +1,9 @@
 package com.pengjinfei.maven.configuration;
 
-import org.slf4j.MDC;
+import com.pengjinfei.maven.utils.MDCUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import java.util.UUID;
 
 /**
  * Created on 8/19/17
@@ -14,17 +12,10 @@ import java.util.UUID;
  */
 public class ThreadPoolTaskExecutorFacotryBean extends ThreadPoolTaskExecutor implements FactoryBean<ThreadPoolTaskExecutor> {
 
-    private  TaskDecorator decorator=new TaskDecorator() {
-        @Override
-        public Runnable decorate(final Runnable runnable) {
-            return new Runnable() {
-                @Override
-                public void run() {
-                    MDC.put("mdc", UUID.randomUUID().toString());
-                    runnable.run();
-                }
-            };
-        }
+    private  TaskDecorator decorator= runnable -> () -> {
+        MDCUtils.setId();
+        runnable.run();
+        MDCUtils.clear();
     };
 
     @Override
