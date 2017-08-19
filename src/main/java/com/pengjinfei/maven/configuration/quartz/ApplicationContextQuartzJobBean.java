@@ -28,8 +28,6 @@ public class ApplicationContextQuartzJobBean extends QuartzJobBean {
 
     private String methodName;
 
-    private String jobName;
-
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
         try {

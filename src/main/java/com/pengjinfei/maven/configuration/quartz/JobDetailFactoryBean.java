@@ -17,7 +17,6 @@ public class JobDetailFactoryBean implements FactoryBean<JobDetail> {
     private JobDetail jobDetail;
     private String beanName;
     private String methodName;
-    private String jobName;
     private String name;
     private boolean concurrent = true;
     private String group= Scheduler.DEFAULT_GROUP ;
@@ -35,7 +34,6 @@ public class JobDetailFactoryBean implements FactoryBean<JobDetail> {
         }
         jdi.getJobDataMap().put("beanName", beanName);
         jdi.getJobDataMap().put("methodName", methodName);
-        //jdi.getJobDataMap().put("jobName", jobName);
         this.jobDetail = jdi;
         return jobDetail;
     }
