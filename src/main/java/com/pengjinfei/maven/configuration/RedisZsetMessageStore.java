@@ -11,17 +11,12 @@ import org.springframework.integration.store.ChannelMessageStore;
 import org.springframework.integration.store.MessageGroup;
 import org.springframework.integration.store.MessageGroupFactory;
 import org.springframework.integration.store.SimpleMessageGroupFactory;
-import org.springframework.integration.support.MutableMessageHeaders;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Calendar;
 import java.util.Set;
-
-import static com.pengjinfei.maven.configuration.Constants.RETRY_TIMES;
 
 /**
  * Created on 7/23/17
@@ -37,12 +32,23 @@ public class RedisZsetMessageStore implements ChannelMessageStore, BeanNameAware
 
     private String beanName;
 
-    public RedisZsetMessageStore(RedisConnectionFactory connectionFactory) {
+    private MessageSocreCalculator calculator;
+
+    public MessageSocreCalculator getCalculator() {
+        return calculator;
+    }
+
+    public void setCalculator(MessageSocreCalculator calculator) {
+        this.calculator = calculator;
+    }
+
+    public RedisZsetMessageStore(RedisConnectionFactory connectionFactory,MessageSocreCalculator calculator) {
         this.redisTemplate = new RedisTemplate<Object, Message<?>>();
         this.redisTemplate.setConnectionFactory(connectionFactory);
         this.redisTemplate.setKeySerializer(new StringRedisSerializer());
         this.redisTemplate.setValueSerializer(new JdkSerializationRedisSerializer());
         this.redisTemplate.afterPropertiesSet();
+        this.calculator=calculator;
     }
 
     public void setValueSerializer(RedisSerializer<?> valueSerializer) {
@@ -92,19 +98,7 @@ public class RedisZsetMessageStore implements ChannelMessageStore, BeanNameAware
 
     @Override
     public MessageGroup addMessageToGroup(Object groupId, Message<?> message) {
-        MessageHeaders headers = message.getHeaders();
-        if (!(headers instanceof MutableMessageHeaders)) {
-            headers = new MutableMessageHeaders(headers);
-        }
-        Integer times = ((Integer) headers.get(RETRY_TIMES));
-        long score;
-        long timeInMillis = Calendar.getInstance().getTimeInMillis();
-        if (times == null) {
-            score = timeInMillis*(-1);
-        } else {
-            score = timeInMillis;
-        }
-        this.redisTemplate.boundZSetOps(groupId).add(message, score);
+        this.redisTemplate.boundZSetOps(groupId).add(message, calculator.calScore(message));
         return null;
     }
 
