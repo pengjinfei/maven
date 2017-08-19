@@ -26,7 +26,7 @@ public class HttpClientConfiguration {
                 .setContentCompressionEnabled(false)
                 .build();
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setMaxTotal(2);
+        connectionManager.setMaxTotal(20);
         return HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .setDefaultRequestConfig(defaultRequestConfig)

@@ -21,7 +21,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.Calendar;
 import java.util.Set;
 
-import static com.pengjinfei.maven.dto.Constants.RETRY_TIMES;
+import static com.pengjinfei.maven.configuration.Constants.RETRY_TIMES;
 
 /**
  * Created on 7/23/17

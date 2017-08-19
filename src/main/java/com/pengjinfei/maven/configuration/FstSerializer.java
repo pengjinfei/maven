@@ -12,7 +12,7 @@ import org.springframework.data.redis.serializer.SerializationException;
 public class FstSerializer implements RedisSerializer<Object> {
 
     private static FSTConfiguration configuration = FSTConfiguration
-            .createStructConfiguration();
+            .createDefaultConfiguration();
 
     @Override
     public byte[] serialize(Object o) throws SerializationException {

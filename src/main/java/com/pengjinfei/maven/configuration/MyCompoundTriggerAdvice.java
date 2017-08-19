@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static com.pengjinfei.maven.dto.Constants.RETRY_HANDLE_DATE;
-import static com.pengjinfei.maven.dto.Constants.RETRY_TIMES;
+import static com.pengjinfei.maven.configuration.Constants.RETRY_HANDLE_DATE;
+import static com.pengjinfei.maven.configuration.Constants.RETRY_TIMES;
 
 /**
  * Created on 7/23/17

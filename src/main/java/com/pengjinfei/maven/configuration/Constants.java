@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.dto;
+package com.pengjinfei.maven.configuration;
 
 /**
  * Created on 7/23/17
