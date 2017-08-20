@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.configuration;
+package com.pengjinfei.maven.configuration.thread;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;

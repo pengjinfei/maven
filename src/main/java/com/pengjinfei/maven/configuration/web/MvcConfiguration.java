@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.configuration;
+package com.pengjinfei.maven.configuration.web;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

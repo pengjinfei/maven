@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.configuration;
+package com.pengjinfei.maven.configuration.web;
 
 import org.springframework.web.bind.annotation.ControllerAdvice;
 

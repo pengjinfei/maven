@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.configuration;
+package com.pengjinfei.maven.configuration.integration;
 
 
 import com.dyuproject.protostuff.LinkedBuffer;

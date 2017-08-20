@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.configuration;
+package com.pengjinfei.maven.configuration.web;
 
 import com.pengjinfei.maven.utils.MDCUtils;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;

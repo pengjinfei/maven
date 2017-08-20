@@ -1,4 +1,4 @@
-package com.pengjinfei.maven.configuration;
+package com.pengjinfei.maven.configuration.cache;
 
 import org.nustaq.serialization.FSTConfiguration;
 import org.springframework.data.redis.serializer.RedisSerializer;
