@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.SchedulerException;
-import org.quartz.impl.JobDetailImpl;
+import org.quartz.impl.triggers.CronTriggerImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.util.ClassUtils;
@@ -34,7 +34,7 @@ public class ApplicationContextQuartzJobBean extends QuartzJobBean {
             Object object = getBean(context, beanName);
             Class<?> userClass = ClassUtils.getUserClass(object);
             Method declaredMethod = userClass.getDeclaredMethod(methodName);
-            String name = ((JobDetailImpl) context.getJobDetail()).getName();
+            String name = ((CronTriggerImpl) context.getTrigger()).getName();
             MDCUtils.setUser(name);
             long begin = System.currentTimeMillis();
             log.debug("begin to execute...");

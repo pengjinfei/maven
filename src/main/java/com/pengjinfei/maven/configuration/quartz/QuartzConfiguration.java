@@ -1,13 +1,11 @@
 package com.pengjinfei.maven.configuration.quartz;
 
-import org.quartz.JobDetail;
 import org.quartz.Trigger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -41,25 +39,6 @@ public class QuartzConfiguration {
         factoryBean.setConfigLocation(new ClassPathResource("quartz.properties"));
         factoryBean.setTransactionManager(transactionManager);
         factoryBean.setApplicationContextSchedulerContextKey(APPLICATION_CONTEXT_KEY);
-        return factoryBean;
-    }
-
-    @Bean
-    public JobDetail testQuartzJobDetail() throws Exception {
-        JobDetailFactoryBean factoryBean = new JobDetailFactoryBean();
-        factoryBean.setConcurrent(false);
-        factoryBean.setName("testQuartzJob");
-        factoryBean.setBeanName("quartzDemo");
-        factoryBean.setMethodName("testQuartz");
-        return factoryBean.getObject();
-    }
-
-    @Bean
-    public CronTriggerFactoryBean testQuartzTrigger() throws Exception{
-        CronTriggerFactoryBean factoryBean = new CronTriggerFactoryBean();
-        factoryBean.setCronExpression("0/15 * * * * ?");
-        factoryBean.setJobDetail(testQuartzJobDetail());
-        factoryBean.setName("testQuartzTrigger");
         return factoryBean;
     }
 }
