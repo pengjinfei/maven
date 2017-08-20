@@ -6,14 +6,13 @@ import org.springframework.retry.RetryContext;
 import org.springframework.retry.policy.RetryCacheCapacityExceededException;
 import org.springframework.retry.policy.RetryContextCache;
 
-import java.util.UUID;
-
 /**
  * Created on 8/20/17
  *
  * @author Pengjinfei
  */
 @Data
+@SuppressWarnings("unchecked")
 public class RedisRetryContextCache implements RetryContextCache {
 
     private RedisTemplate template;
@@ -22,41 +21,29 @@ public class RedisRetryContextCache implements RetryContextCache {
 
     @Override
     public RetryContext get(Object o) {
-        if (o instanceof UUID) {
-            UUID id = (UUID) o;
-            return (RetryContext) template.opsForHash().get(key, id.toString());
-        } else {
-            return (RetryContext) template.opsForHash().get(key, o);
-        }
+        return (RetryContext) template.opsForHash().get(key, o);
     }
 
     @Override
     public void put(Object o, RetryContext retryContext) throws RetryCacheCapacityExceededException {
-        if (o instanceof UUID) {
-            UUID id = (UUID) o;
-            template.opsForHash().put(key, id.toString(), retryContext);
-        } else {
-            template.opsForHash().put(key, o, retryContext);
-        }
+        /*
+          retryContext的异常信息非常多,影响序列化效率
+          可以考虑将其置为 null,或者替换为其他简略信息(时间戳,线程 UUID 等)
+         */
+/*        if (retryContext instanceof RetryContextSupport) {
+            RetryContextSupport context = (RetryContextSupport) retryContext;
+            context.registerThrowable(null);
+        }*/
+        template.opsForHash().put(key, o, retryContext);
     }
 
     @Override
     public void remove(Object o) {
-        if (o instanceof UUID) {
-            UUID id = (UUID) o;
-            template.opsForHash().delete(key, id.toString());
-        } else {
-            template.opsForHash().delete(key, o);
-        }
+        template.opsForHash().delete(key, o);
     }
 
     @Override
     public boolean containsKey(Object o) {
-        if (o instanceof UUID) {
-            UUID id = (UUID) o;
-            return template.opsForHash().hasKey(key, id.toString());
-        } else {
-            return template.opsForHash().hasKey(key, o);
-        }
+        return template.opsForHash().hasKey(key, o);
     }
 }

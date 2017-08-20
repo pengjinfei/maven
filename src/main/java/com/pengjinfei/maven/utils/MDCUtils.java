@@ -22,6 +22,10 @@ public class MDCUtils {
         }
     }
 
+    public static String getId() {
+        return MDC.get(ID);
+    }
+
     public static void setId() {
         putIfAbsent(ID, UUID.randomUUID().toString());
     }

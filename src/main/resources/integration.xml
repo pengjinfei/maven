@@ -70,7 +70,7 @@
             <bean class="org.springframework.integration.handler.advice.RequestHandlerRetryAdvice">
                 <property name="retryStateGenerator">
                     <bean class="org.springframework.integration.handler.advice.SpelExpressionRetryStateGenerator">
-                        <constructor-arg value="headers['retryId']" />
+                        <constructor-arg value="headers['retryId'].toString()" />
                     </bean>
                 </property>
                 <property name="recoveryCallback">
