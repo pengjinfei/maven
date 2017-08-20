@@ -3,12 +3,14 @@ package com.pengjinfei.maven.configuration.cache;
 import org.nustaq.serialization.FSTConfiguration;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
+import org.springframework.stereotype.Component;
 
 /**
  * Created on 7/22/17
  *
  * @author Pengjinfei
  */
+@Component
 public class FstSerializer implements RedisSerializer<Object> {
 
     private static FSTConfiguration configuration = FSTConfiguration
@@ -29,4 +31,5 @@ public class FstSerializer implements RedisSerializer<Object> {
         }
         return configuration.asObject(bytes);
     }
+
 }

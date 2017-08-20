@@ -14,11 +14,11 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfiguration {
     @Bean
-    public RedisTemplate template(RedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate template(RedisConnectionFactory redisConnectionFactory,FstSerializer fstSerializer) {
         RedisTemplate redisTemplate=new RedisTemplate();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new FstSerializer());
+        redisTemplate.setValueSerializer(fstSerializer);
         return redisTemplate;
     }
 }

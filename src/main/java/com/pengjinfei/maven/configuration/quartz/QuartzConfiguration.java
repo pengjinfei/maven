@@ -39,6 +39,7 @@ public class QuartzConfiguration {
         factoryBean.setConfigLocation(new ClassPathResource("quartz.properties"));
         factoryBean.setTransactionManager(transactionManager);
         factoryBean.setApplicationContextSchedulerContextKey(APPLICATION_CONTEXT_KEY);
+        factoryBean.setAutoStartup(false);
         return factoryBean;
     }
 }

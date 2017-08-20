@@ -5,7 +5,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableJpaRepositories
 @EnableTransactionManagement
 @EnableIntegration
-@IntegrationComponentScan
+//@IntegrationComponentScan
 @Slf4j
 public class Application {
 

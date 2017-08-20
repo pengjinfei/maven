@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd"
+       xmlns:int="http://www.springframework.org/schema/integration">
+
+    <int:logging-channel-adapter id="logger" level="DEBUG"/>
+
+    <bean class="org.springframework.integration.redis.store.RedisChannelMessageStore" id="channelMessageStore">
+        <constructor-arg name="connectionFactory" ref="redisConnectionFactory"/>
+        <property name="valueSerializer" ref="fstSerializer"/>
+    </bean>
+
+    <bean class="org.springframework.integration.store.MessageGroupQueue" id="channelDemoQueue">
+        <constructor-arg index="0" ref="channelMessageStore"/>
+        <constructor-arg index="1" value="demo"/>
+    </bean>
+
+    <bean class="org.springframework.integration.store.MessageGroupQueue" id="delayedQueue">
+        <constructor-arg index="0" ref="channelMessageStore"/>
+        <constructor-arg index="1" value="delayed"/>
+    </bean>
+
+
+<!--    <int:channel-interceptor>
+        <bean class="com.pengjinfei.maven.configuration.integration.RetryIdChannelInterceptor"/>
+    </int:channel-interceptor>-->
+
+    <bean class="com.pengjinfei.maven.configuration.integration.RetryIdChannelInterceptor" id="retryIdChannelInterceptor"/>
+
+    <int:channel id="channelDemo" >
+        <int:queue ref="channelDemoQueue"/>
+        <int:interceptors>
+            <int:wire-tap channel="logger"/>
+            <int:ref bean="retryIdChannelInterceptor"/>
+        </int:interceptors>
+    </int:channel>
+
+    <int:channel id="delayedDemo" >
+        <int:queue ref="delayedQueue"/>
+        <int:interceptors>
+            <int:wire-tap channel="logger"/>
+            <!--<int:ref bean="retryIdChannelInterceptor"/>-->
+        </int:interceptors>
+    </int:channel>
+
+    <int:gateway service-interface="com.pengjinfei.maven.service.integration.GateWayDemo"
+                 default-request-channel="channelDemo">
+        <int:method name="sayHello" request-channel="channelDemo"/>
+    </int:gateway>
+
+    <bean class="com.pengjinfei.maven.configuration.thread.ThreadPoolTaskExecutorFacotryBean" id="poolTaskExecutor">
+        <property name="corePoolSize" value="10"/>
+    </bean>
+
+    <bean class="com.pengjinfei.maven.configuration.integration.RedisRetryContextCache" id="retryContextCache">
+        <property name="template" ref="template"/>
+    </bean>
+
+    <bean class="org.springframework.retry.support.RetryTemplate" id="retryTemplate">
+        <property name="retryContextCache" ref="retryContextCache"/>
+    </bean>
+
+    <int:service-activator input-channel="channelDemo" ref="serviceActivatorDemo" method="sayHello">
+        <int:poller cron="0/15 * * * * ?" task-executor="poolTaskExecutor">
+            <int:transactional synchronization-factory="syncFactory"/>
+        </int:poller>
+        <int:request-handler-advice-chain>
+            <bean class="org.springframework.integration.handler.advice.RequestHandlerRetryAdvice">
+                <property name="retryStateGenerator">
+                    <bean class="org.springframework.integration.handler.advice.SpelExpressionRetryStateGenerator">
+                        <constructor-arg value="headers['retryId']" />
+                    </bean>
+                </property>
+                <property name="recoveryCallback">
+                    <bean class="org.springframework.integration.handler.advice.ErrorMessageSendingRecoverer">
+                        <constructor-arg ref="nullChannel" />
+                    </bean>
+                </property>
+                <property name="retryTemplate" ref="retryTemplate"/>
+            </bean>
+        </int:request-handler-advice-chain>
+    </int:service-activator>
+
+    <int:transaction-synchronization-factory id="syncFactory">
+        <int:after-rollback channel="delayedDemo"/>
+    </int:transaction-synchronization-factory>
+
+    <bean class="org.springframework.integration.redis.store.RedisMessageStore" id="redisMessageStore">
+        <constructor-arg ref="redisConnectionFactory"/>
+        <property name="valueSerializer" ref="fstSerializer"/>
+    </bean>
+
+    <int:delayer id="delayerDemo" input-channel="delayedDemo"
+                 output-channel="channelDemo"
+                 message-store="redisMessageStore"
+                 default-delay="10000" >
+        <int:poller task-executor="poolTaskExecutor" cron="0/30 * * * * ?">
+        </int:poller>
+    </int:delayer>
+
+</beans>
