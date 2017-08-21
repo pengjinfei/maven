@@ -39,7 +39,7 @@ public class QuartzJobBeanDefinitionRegistryPostProcessor implements BeanDefinit
                     continue;
                 }
                 ReflectionUtils.doWithLocalMethods(aClass, method -> {
-                    QuartzJob quartzJob = AnnotationUtils.getAnnotation(method, QuartzJob.class);
+                    QuartzJob quartzJob = AnnotationUtils.findAnnotation(method, QuartzJob.class);
                     if (quartzJob == null) {
                         return;
                     }
