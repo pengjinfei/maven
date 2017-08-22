@@ -7,17 +7,22 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.beans.factory.support.ManagedList;
-import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.factory.support.*;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.integration.channel.QueueChannel;
+import org.springframework.integration.config.ServiceActivatorFactoryBean;
+import org.springframework.integration.endpoint.PollingConsumer;
 import org.springframework.integration.gateway.GatewayMethodMetadata;
 import org.springframework.integration.gateway.GatewayProxyFactoryBean;
 import org.springframework.integration.store.MessageGroupQueue;
+import org.springframework.integration.transaction.DefaultTransactionSynchronizationFactory;
+import org.springframework.integration.transaction.ExpressionEvaluatingTransactionSynchronizationProcessor;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
+import org.springframework.transaction.interceptor.MatchAlwaysTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -84,6 +89,17 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                         channelDef.getPropertyValues().add("interceptors",managedList);
                     }
 
+                    //delayQueue
+                    String delayChannelQueueId = baseName + "_delayQueue";
+                    RootBeanDefinition delayChannelQueueDef = new RootBeanDefinition(MessageGroupQueue.class);
+                    ConstructorArgumentValues delayChannelQueueConArgs = delayChannelQueueDef.getConstructorArgumentValues();
+                    delayChannelQueueConArgs.addIndexedArgumentValue(0, new RuntimeBeanReference("channelMessageStore"));
+                    delayChannelQueueConArgs.addIndexedArgumentValue(1, baseName+"_delay");
+
+                    //delayChannel
+                    String delayChannelId = baseName + "_delayChannel";
+                    RootBeanDefinition delayChannelDef = new RootBeanDefinition(QueueChannel.class);
+                    delayChannelDef.getConstructorArgumentValues().addIndexedArgumentValue(0, new RuntimeBeanReference(delayChannelQueueId));
 
                     //gateway
                     String gateWaylId = s + "Gateway";
@@ -106,8 +122,61 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     methodMetadataMap.put(methodName, methodMetadata);
                     gateWayPV.add("methodMetadataMap", methodMetadataMap);
 
+                    //service activator
+                    String serviceActivatorId = baseName + "_serviceActivator";
+                    RootBeanDefinition serviceActivatorDef = new RootBeanDefinition(ServiceActivatorFactoryBean.class);
+                    MutablePropertyValues serviceActivatorPV = serviceActivatorDef.getPropertyValues();
+                    serviceActivatorPV.add("targetObject", new RuntimeBeanReference(s));
+                    serviceActivatorPV.add("targetMethodName", methodName);
+
+                    //transactionInterceptor
+                    String tsInterceptorId = baseName + "_transactionInterceptor";
+                    RootBeanDefinition transactionInterceptorDef = new RootBeanDefinition(TransactionInterceptor.class);
+                    MutablePropertyValues transactionInterceptorPV = transactionInterceptorDef.getPropertyValues();
+                    transactionInterceptorPV.add("transactionManager", new RuntimeBeanReference("transactionManager"));
+                    GenericBeanDefinition attributeSourceDef = new GenericBeanDefinition();
+                    attributeSourceDef.setBeanClass(MatchAlwaysTransactionAttributeSource.class);
+                    GenericBeanDefinition attributeDef = new GenericBeanDefinition();
+                    attributeDef.setBeanClass(DefaultTransactionAttribute.class);
+                    MutablePropertyValues attributePV = attributeDef.getPropertyValues();
+                    attributePV.add("propagationBehaviorName", "PROPAGATION_REQUIRED");
+                    attributePV.add("isolationLevelName", "ISOLATION_DEFAULT");
+                    attributePV.add("timeout", "-1");
+                    attributePV.add("readOnly", "false");
+                    attributeSourceDef.getPropertyValues().add("transactionAttribute",attributeDef);
+                    transactionInterceptorPV.add("transactionAttributeSource", attributeSourceDef);
+
+                    //transactionSynchronizationFactory
+                    String tranSynFacId = baseName + "_transactionSynchronizationFactory";
+                    GenericBeanDefinition processorDef = new GenericBeanDefinition();
+                    processorDef.setBeanClass(ExpressionEvaluatingTransactionSynchronizationProcessor.class);
+                    processorDef.getPropertyValues().add("afterRollbackChannel", new RuntimeBeanReference(delayChannelId));
+                    RootBeanDefinition tranSynFacDef = new RootBeanDefinition(DefaultTransactionSynchronizationFactory.class);
+                    tranSynFacDef.getConstructorArgumentValues().addIndexedArgumentValue(0,processorDef);
+
+                    //poller
+                    String pollingConsumerId = baseName + "_poller";
+                    RootBeanDefinition pollingConsumerDef = new RootBeanDefinition(PollingConsumer.class);
+                    ConstructorArgumentValues pollingConsumerArgs = pollingConsumerDef.getConstructorArgumentValues();
+                    pollingConsumerArgs.addIndexedArgumentValue(0,new RuntimeBeanReference(channelId));
+                    pollingConsumerArgs.addIndexedArgumentValue(1,new RuntimeBeanReference(serviceActivatorId));
+                    MutablePropertyValues pollingConsumerPV = pollingConsumerDef.getPropertyValues();
+                    pollingConsumerPV.add("trigger", new CronTrigger(asynRunner.cron()));
+                    ManagedList managedList = new ManagedList();
+                    managedList.add(new RuntimeBeanReference(tsInterceptorId));
+                    pollingConsumerPV.add("adviceChain", managedList);
+                    pollingConsumerPV.add("maxMessagesPerPoll", asynRunner.maxPerPoll());
+                    pollingConsumerPV.add("transactionSynchronizationFactory", new RuntimeBeanReference(tranSynFacId));
+
+
                     registry.registerBeanDefinition(channelQueueId, messageGroupQueueDef);
                     registry.registerBeanDefinition(channelId, channelDef);
+                    registry.registerBeanDefinition(delayChannelQueueId,delayChannelQueueDef);
+                    registry.registerBeanDefinition(delayChannelId,delayChannelDef);
+                    registry.registerBeanDefinition(serviceActivatorId,serviceActivatorDef);
+                    registry.registerBeanDefinition(tsInterceptorId,transactionInterceptorDef);
+                    registry.registerBeanDefinition(tranSynFacId,tranSynFacDef);
+                    registry.registerBeanDefinition(pollingConsumerId,pollingConsumerDef);
                 });
             } catch (ClassNotFoundException ignored) {
             }

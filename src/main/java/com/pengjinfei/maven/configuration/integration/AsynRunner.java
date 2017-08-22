@@ -22,7 +22,7 @@ public @interface AsynRunner {
     /*
     每次执行的条数,默认执行到无数据为止
      */
-    int maxPerPoll() default -1;
+    long maxPerPoll() default -1;
 
     /*
     需要持久到数据库是的 mybatis sqlId
