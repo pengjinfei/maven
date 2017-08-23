@@ -111,6 +111,7 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     delayChannelDef.getConstructorArgumentValues().addIndexedArgumentValue(0, new RuntimeBeanReference(delayChannelQueueId));
 
                     //gateway
+                    //TODO 批量 gateway
                     String gateWaylId = s + "Gateway";
                     MutablePropertyValues gateWayPV;
                     if (!registry.containsBeanDefinition(gateWaylId)) {
@@ -135,6 +136,7 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     GenericBeanDefinition retryAdviceDef = new GenericBeanDefinition();
                     retryAdviceDef.setBeanClass(RequestHandlerRetryAdvice.class);
                     MutablePropertyValues retryAdvicePV = retryAdviceDef.getPropertyValues();
+                    //TODO 自定义重试次数
                     retryAdvicePV.add("retryTemplate", new RuntimeBeanReference("retryTemplate"));
 
                     GenericBeanDefinition stateGeneratorDef = new GenericBeanDefinition();
@@ -190,6 +192,7 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     tranSynFacDef.getConstructorArgumentValues().addIndexedArgumentValue(0,processorDef);
 
                     //poller
+                    //TODO 线程池
                     String pollingConsumerId = baseName + "_poller";
                     RootBeanDefinition pollingConsumerDef = new RootBeanDefinition(PollingConsumer.class);
                     ConstructorArgumentValues pollingConsumerArgs = pollingConsumerDef.getConstructorArgumentValues();
@@ -208,6 +211,7 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     RootBeanDefinition delayerDef = new RootBeanDefinition(DelayHandler.class);
                     delayerDef.getConstructorArgumentValues().addIndexedArgumentValue(0,delayerId);
                     MutablePropertyValues delayerPV = delayerDef.getPropertyValues();
+                    //TODO 不能写死
                     delayerPV.add("messageStore", new RuntimeBeanReference("redisMessageStore"));
                     delayerPV.add("defaultDelay", asynRunner.timeUnit().toMillis(asynRunner.delayedTime()));
                     delayerPV.add("outputChannelName", channelId);
