@@ -14,6 +14,9 @@ import org.springframework.integration.config.ServiceActivatorFactoryBean;
 import org.springframework.integration.endpoint.PollingConsumer;
 import org.springframework.integration.gateway.GatewayMethodMetadata;
 import org.springframework.integration.gateway.GatewayProxyFactoryBean;
+import org.springframework.integration.handler.DelayHandler;
+import org.springframework.integration.handler.advice.RequestHandlerRetryAdvice;
+import org.springframework.integration.handler.advice.SpelExpressionRetryStateGenerator;
 import org.springframework.integration.store.MessageGroupQueue;
 import org.springframework.integration.transaction.DefaultTransactionSynchronizationFactory;
 import org.springframework.integration.transaction.ExpressionEvaluatingTransactionSynchronizationProcessor;
@@ -122,12 +125,30 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     methodMetadataMap.put(methodName, methodMetadata);
                     gateWayPV.add("methodMetadataMap", methodMetadataMap);
 
+                    //retry
+                    GenericBeanDefinition retryAdviceDef = new GenericBeanDefinition();
+                    retryAdviceDef.setBeanClass(RequestHandlerRetryAdvice.class);
+                    MutablePropertyValues retryAdvicePV = retryAdviceDef.getPropertyValues();
+                    retryAdvicePV.add("retryTemplate", new RuntimeBeanReference("retryTemplate"));
+
+                    GenericBeanDefinition stateGeneratorDef = new GenericBeanDefinition();
+                    stateGeneratorDef.setBeanClass(SpelExpressionRetryStateGenerator.class);
+                    stateGeneratorDef.getConstructorArgumentValues().addIndexedArgumentValue(0, "headers['retryId'].toString()");
+                    retryAdvicePV.add("retryStateGenerator", stateGeneratorDef);
+
+                    GenericBeanDefinition nullRecoveryCallbackDef = new GenericBeanDefinition();
+                    nullRecoveryCallbackDef.setBeanClass(NullRecoveryCallback.class);
+                    retryAdvicePV.add("recoveryCallback", nullRecoveryCallbackDef);
+
                     //service activator
                     String serviceActivatorId = baseName + "_serviceActivator";
                     RootBeanDefinition serviceActivatorDef = new RootBeanDefinition(ServiceActivatorFactoryBean.class);
                     MutablePropertyValues serviceActivatorPV = serviceActivatorDef.getPropertyValues();
                     serviceActivatorPV.add("targetObject", new RuntimeBeanReference(s));
                     serviceActivatorPV.add("targetMethodName", methodName);
+                    ManagedList servcieActivatorChain = new ManagedList();
+                    servcieActivatorChain.add(retryAdviceDef);
+                    serviceActivatorPV.add("adviceChain", servcieActivatorChain);
 
                     //transactionInterceptor
                     String tsInterceptorId = baseName + "_transactionInterceptor";
@@ -168,6 +189,24 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     pollingConsumerPV.add("maxMessagesPerPoll", asynRunner.maxPerPoll());
                     pollingConsumerPV.add("transactionSynchronizationFactory", new RuntimeBeanReference(tranSynFacId));
 
+                    //delayer
+                    String delayerId = baseName + "_delayer";
+                    RootBeanDefinition delayerDef = new RootBeanDefinition(DelayHandler.class);
+                    delayerDef.getConstructorArgumentValues().addIndexedArgumentValue(0,delayerId);
+                    MutablePropertyValues delayerPV = delayerDef.getPropertyValues();
+                    delayerPV.add("messageStore", new RuntimeBeanReference("redisMessageStore"));
+                    delayerPV.add("defaultDelay", asynRunner.timeUnit().toMillis(asynRunner.delayedTime()));
+                    delayerPV.add("outputChannelName", channelId);
+
+                    //delayerPoller
+                    String delayPollerId = baseName + "_delayPoller";
+                    RootBeanDefinition delayPollerDef = new RootBeanDefinition(PollingConsumer.class);
+                    ConstructorArgumentValues delayPoolerArgs = delayPollerDef.getConstructorArgumentValues();
+                    delayPoolerArgs.addIndexedArgumentValue(0,new RuntimeBeanReference(delayChannelId));
+                    delayPoolerArgs.addIndexedArgumentValue(1,new RuntimeBeanReference(delayerId));
+                    MutablePropertyValues delayPollerPV = delayPollerDef.getPropertyValues();
+                    delayPollerPV.add("trigger", new CronTrigger(asynRunner.retryCron()));
+
 
                     registry.registerBeanDefinition(channelQueueId, messageGroupQueueDef);
                     registry.registerBeanDefinition(channelId, channelDef);
@@ -177,6 +216,8 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     registry.registerBeanDefinition(tsInterceptorId,transactionInterceptorDef);
                     registry.registerBeanDefinition(tranSynFacId,tranSynFacDef);
                     registry.registerBeanDefinition(pollingConsumerId,pollingConsumerDef);
+                    registry.registerBeanDefinition(delayerId, delayerDef);
+                    registry.registerBeanDefinition(delayPollerId,delayPollerDef);
                 });
             } catch (ClassNotFoundException ignored) {
             }
