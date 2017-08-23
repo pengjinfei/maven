@@ -1,6 +1,6 @@
 package com.pengjinfei.maven.service.integration;
 
-import com.pengjinfei.maven.dto.Person;
+import com.pengjinfei.maven.entity.Person;
 
 /**
  * Created on 8/20/17

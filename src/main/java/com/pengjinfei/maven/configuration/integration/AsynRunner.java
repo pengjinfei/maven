@@ -35,6 +35,11 @@ public @interface AsynRunner {
     String updateSqlId() default "";
 
     /*
+    重试失败之后执行的 mybatis sqlId
+     */
+    String failedSqlId() default "";
+
+    /*
     重试的 cron 表达式,为空不重试
      */
     String retryCron() default "";

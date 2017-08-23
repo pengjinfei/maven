@@ -1,6 +1,6 @@
 package com.pengjinfei.maven.controller;
 
-import com.pengjinfei.maven.dto.Person;
+import com.pengjinfei.maven.entity.Person;
 import com.pengjinfei.maven.service.integration.GateWayDemo;
 import com.pengjinfei.maven.service.integration.IntegrationDemoInterface;
 import org.springframework.beans.factory.annotation.Autowired;

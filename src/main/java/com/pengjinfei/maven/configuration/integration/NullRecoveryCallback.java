@@ -15,7 +15,7 @@ public class NullRecoveryCallback implements RecoveryCallback {
     @Override
     public Object recover(RetryContext retryContext) throws Exception {
         GenericMessage message = (GenericMessage) retryContext.getAttribute("message");
-        log.info("retry message {} out!",message);
+        log.warn("retry message {} out!",message);
         return null;
     }
 }

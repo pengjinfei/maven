@@ -88,7 +88,13 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     boolean retry = StringUtils.hasLength(retryCron);
                     if (retry) {
                         ManagedList managedList = new ManagedList();
-                        managedList.add(new RuntimeBeanReference("retryIdChannelInterceptor"));
+                        GenericBeanDefinition retryIntceptorDef = new GenericBeanDefinition();
+                        retryIntceptorDef.setBeanClass(RetryIdChannelInterceptor.class);
+                        String insertSqlId = asynRunner.insertSqlId();
+                        if (StringUtils.hasText(insertSqlId)) {
+                            retryIntceptorDef.getPropertyValues().add("sql", insertSqlId);
+                        }
+                        managedList.add(retryIntceptorDef);
                         channelDef.getPropertyValues().add("interceptors",managedList);
                     }
 
@@ -136,9 +142,17 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     stateGeneratorDef.getConstructorArgumentValues().addIndexedArgumentValue(0, "headers['retryId'].toString()");
                     retryAdvicePV.add("retryStateGenerator", stateGeneratorDef);
 
-                    GenericBeanDefinition nullRecoveryCallbackDef = new GenericBeanDefinition();
-                    nullRecoveryCallbackDef.setBeanClass(NullRecoveryCallback.class);
-                    retryAdvicePV.add("recoveryCallback", nullRecoveryCallbackDef);
+                    String failedSqlId = asynRunner.failedSqlId();
+                    if (StringUtils.isEmpty(failedSqlId)) {
+                        GenericBeanDefinition nullRecoveryCallbackDef = new GenericBeanDefinition();
+                        nullRecoveryCallbackDef.setBeanClass(NullRecoveryCallback.class);
+                        retryAdvicePV.add("recoveryCallback", nullRecoveryCallbackDef);
+                    } else {
+                        GenericBeanDefinition mybatisUpdateRecoveryCallbackDef = new GenericBeanDefinition();
+                        mybatisUpdateRecoveryCallbackDef.setBeanClass(MybatisUpdateRecoveryCallback.class);
+                        mybatisUpdateRecoveryCallbackDef.getPropertyValues().add("sql", failedSqlId);
+                        retryAdvicePV.add("recoveryCallback", mybatisUpdateRecoveryCallbackDef);
+                    }
 
                     //service activator
                     String serviceActivatorId = baseName + "_serviceActivator";
