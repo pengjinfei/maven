@@ -193,6 +193,7 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     //TODO 线程池
                     String pollingConsumerId = baseName + "_poller";
                     RootBeanDefinition pollingConsumerDef = new RootBeanDefinition(QuartzPollingConsumer.class);
+                    pollingConsumerDef.setLazyInit(true);
                     ConstructorArgumentValues pollingConsumerArgs = pollingConsumerDef.getConstructorArgumentValues();
                     pollingConsumerArgs.addIndexedArgumentValue(0,new RuntimeBeanReference(channelId));
                     pollingConsumerArgs.addIndexedArgumentValue(1,new RuntimeBeanReference(serviceActivatorId));
@@ -217,11 +218,12 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     //delayerPoller
                     String delayPollerId = baseName + "_delayPoller";
                     RootBeanDefinition delayPollerDef = new RootBeanDefinition(QuartzPollingConsumer.class);
+                    delayChannelDef.setLazyInit(true);
                     ConstructorArgumentValues delayPoolerArgs = delayPollerDef.getConstructorArgumentValues();
                     delayPoolerArgs.addIndexedArgumentValue(0,new RuntimeBeanReference(delayChannelId));
                     delayPoolerArgs.addIndexedArgumentValue(1,new RuntimeBeanReference(delayerId));
                     MutablePropertyValues delayPollerPV = delayPollerDef.getPropertyValues();
-                    pollingConsumerPV.add("cronExpress", asynRunner.retryCron());
+                    delayPollerPV.add("cronExpress", asynRunner.retryCron());
 
 
                     registry.registerBeanDefinition(channelQueueId, messageGroupQueueDef);

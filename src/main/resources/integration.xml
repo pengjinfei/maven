@@ -86,8 +86,13 @@
         <int:after-rollback channel="delayedDemo"/>
     </int:transaction-synchronization-factory>-->
 
-    <bean class="org.springframework.integration.redis.store.RedisMessageStore" id="redisMessageStore">
-        <constructor-arg ref="redisConnectionFactory"/>
+    <bean class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory" id="redisConnectionFactory">
+        <property name="hostName" value="${spring.redis.host}"/>
+        <property name="database" value="${spring.redis.database}"/>
+    </bean>
+
+    <bean class="org.springframework.integration.redis.store.RedisMessageStore" id="redisMessageStore" lazy-init="true">
+        <constructor-arg name="connectionFactory" ref="redisConnectionFactory"/>
         <property name="valueSerializer" ref="fstSerializer"/>
     </bean>
 
