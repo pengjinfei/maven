@@ -27,6 +27,7 @@ public class JobDetailFactoryBean implements FactoryBean<JobDetail> {
         JobDetailImpl jdi = new JobDetailImpl();
         jdi.setName(name);
         jdi.setGroup(group);
+        jdi.setDurability(true);
         if (concurrent) {
             jdi.setJobClass(ApplicationContextQuartzJobBean.class);
         } else {

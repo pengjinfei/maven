@@ -38,8 +38,9 @@ public class QuartzConfiguration {
         factoryBean.setDataSource(dataSource);
         factoryBean.setConfigLocation(new ClassPathResource("quartz.properties"));
         factoryBean.setTransactionManager(transactionManager);
+        factoryBean.setOverwriteExistingJobs(true);
         factoryBean.setApplicationContextSchedulerContextKey(APPLICATION_CONTEXT_KEY);
-        factoryBean.setAutoStartup(false);
+        //factoryBean.setAutoStartup(false);
         return factoryBean;
     }
 }

@@ -23,7 +23,7 @@ public class IntegrationRest {
     private GateWayDemo gateWayDemo;
 
     @Autowired
-    @Qualifier("integrationDemoInterfaceImplGateway")
+    @Qualifier("integrationDemoInterfaceGateway")
     private IntegrationDemoInterface integrationDemoInterface;
 
     @PostMapping

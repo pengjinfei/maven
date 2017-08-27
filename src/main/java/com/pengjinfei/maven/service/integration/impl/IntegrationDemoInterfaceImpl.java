@@ -13,13 +13,13 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Pengjinfei
  */
-@Service
+@Service("integrationDemoInterface")
 @Slf4j
 public class IntegrationDemoInterfaceImpl implements IntegrationDemoInterface {
 
     @Override
-    @AsynRunner(cron = "0/10 * * * * ?",
-            retryCron="0/10 * * * * ?",
+    @AsynRunner(cron = "0/10 1 * * * ?",
+            retryCron="0/10 1 * * * ?",
             delayedTime = 20,
             timeUnit = TimeUnit.SECONDS,
             insertSqlId = "com.pengjinfei.maven.mapper.PersonMapper.insertSelective",

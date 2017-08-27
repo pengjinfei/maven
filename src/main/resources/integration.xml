@@ -23,9 +23,9 @@
     </bean>
 
 
-<!--    <int:channel-interceptor>
+    <int:channel-interceptor>
         <bean class="com.pengjinfei.maven.configuration.integration.RetryIdChannelInterceptor"/>
-    </int:channel-interceptor>-->
+    </int:channel-interceptor>
 
     <bean class="com.pengjinfei.maven.configuration.integration.RetryIdChannelInterceptor" id="retryIdChannelInterceptor"/>
 
@@ -41,7 +41,6 @@
         <int:queue ref="delayedQueue"/>
         <int:interceptors>
             <int:wire-tap channel="logger"/>
-            <!--<int:ref bean="retryIdChannelInterceptor"/>-->
         </int:interceptors>
     </int:channel>
 
@@ -62,7 +61,7 @@
         <property name="retryContextCache" ref="retryContextCache"/>
     </bean>
 
-    <int:service-activator input-channel="channelDemo" ref="serviceActivatorDemo" method="sayHello">
+    <!--<int:service-activator input-channel="channelDemo" ref="serviceActivatorDemo" method="sayHello">
         <int:poller cron="0/15 * * * * ?" task-executor="poolTaskExecutor">
             <int:transactional synchronization-factory="syncFactory"/>
         </int:poller>
@@ -85,19 +84,30 @@
 
     <int:transaction-synchronization-factory id="syncFactory">
         <int:after-rollback channel="delayedDemo"/>
-    </int:transaction-synchronization-factory>
+    </int:transaction-synchronization-factory>-->
 
     <bean class="org.springframework.integration.redis.store.RedisMessageStore" id="redisMessageStore">
         <constructor-arg ref="redisConnectionFactory"/>
         <property name="valueSerializer" ref="fstSerializer"/>
     </bean>
 
-    <int:delayer id="delayerDemo" input-channel="delayedDemo"
+<!--    <int:delayer id="delayerDemo" input-channel="delayedDemo"
                  output-channel="channelDemo"
                  message-store="redisMessageStore"
                  default-delay="10000" >
         <int:poller task-executor="poolTaskExecutor" cron="0/30 * * * * ?">
         </int:poller>
-    </int:delayer>
+    </int:delayer>-->
+
+    <bean class="org.springframework.integration.config.ServiceActivatorFactoryBean" id="handler">
+        <property name="targetObject" ref="serviceActivatorDemo"/>
+        <property name="targetMethodName" value="sayHelloByQuartz"/>
+    </bean>
+
+    <bean class="com.pengjinfei.maven.configuration.integration.QuartzPollingConsumer" id="trigger">
+        <constructor-arg index="0" ref="channelDemo"/>
+        <constructor-arg index="1" ref="handler"/>
+        <property name="cronExpress" value="0/10 * * * * ?"/>
+    </bean>
 
 </beans>

@@ -33,7 +33,7 @@ public class ApplicationContextQuartzJobBean extends QuartzJobBean {
         try {
             Object object = getBean(context, beanName);
             Class<?> userClass = ClassUtils.getUserClass(object);
-            Method declaredMethod = userClass.getDeclaredMethod(methodName);
+            Method declaredMethod = userClass.getMethod(methodName);
             String name = ((CronTriggerImpl) context.getTrigger()).getName();
             MDCUtils.setUser(name);
             long begin = System.currentTimeMillis();
