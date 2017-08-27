@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit;
 public class IntegrationDemoInterfaceImpl implements IntegrationDemoInterface {
 
     @Override
-    @AsynRunner(cron = "0/10 1 * * * ?",
-            retryCron="0/10 1 * * * ?",
+    @AsynRunner(cron = "12 * * * * ?",
+            retryCron="0/10 * * * * ?",
             delayedTime = 20,
             timeUnit = TimeUnit.SECONDS,
             insertSqlId = "com.pengjinfei.maven.mapper.PersonMapper.insertSelective",

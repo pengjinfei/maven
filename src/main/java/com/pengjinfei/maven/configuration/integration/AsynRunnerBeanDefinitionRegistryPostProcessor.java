@@ -11,7 +11,6 @@ import org.springframework.beans.factory.support.*;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.ServiceActivatorFactoryBean;
-import org.springframework.integration.endpoint.PollingConsumer;
 import org.springframework.integration.gateway.GatewayMethodMetadata;
 import org.springframework.integration.gateway.GatewayProxyFactoryBean;
 import org.springframework.integration.handler.DelayHandler;
@@ -20,7 +19,6 @@ import org.springframework.integration.handler.advice.SpelExpressionRetryStateGe
 import org.springframework.integration.store.MessageGroupQueue;
 import org.springframework.integration.transaction.DefaultTransactionSynchronizationFactory;
 import org.springframework.integration.transaction.ExpressionEvaluatingTransactionSynchronizationProcessor;
-import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
@@ -194,12 +192,12 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     //poller
                     //TODO 线程池
                     String pollingConsumerId = baseName + "_poller";
-                    RootBeanDefinition pollingConsumerDef = new RootBeanDefinition(PollingConsumer.class);
+                    RootBeanDefinition pollingConsumerDef = new RootBeanDefinition(QuartzPollingConsumer.class);
                     ConstructorArgumentValues pollingConsumerArgs = pollingConsumerDef.getConstructorArgumentValues();
                     pollingConsumerArgs.addIndexedArgumentValue(0,new RuntimeBeanReference(channelId));
                     pollingConsumerArgs.addIndexedArgumentValue(1,new RuntimeBeanReference(serviceActivatorId));
                     MutablePropertyValues pollingConsumerPV = pollingConsumerDef.getPropertyValues();
-                    pollingConsumerPV.add("trigger", new CronTrigger(asynRunner.cron()));
+                    pollingConsumerPV.add("cronExpress", asynRunner.cron());
                     ManagedList managedList = new ManagedList();
                     managedList.add(new RuntimeBeanReference(tsInterceptorId));
                     pollingConsumerPV.add("adviceChain", managedList);
@@ -218,12 +216,12 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
 
                     //delayerPoller
                     String delayPollerId = baseName + "_delayPoller";
-                    RootBeanDefinition delayPollerDef = new RootBeanDefinition(PollingConsumer.class);
+                    RootBeanDefinition delayPollerDef = new RootBeanDefinition(QuartzPollingConsumer.class);
                     ConstructorArgumentValues delayPoolerArgs = delayPollerDef.getConstructorArgumentValues();
                     delayPoolerArgs.addIndexedArgumentValue(0,new RuntimeBeanReference(delayChannelId));
                     delayPoolerArgs.addIndexedArgumentValue(1,new RuntimeBeanReference(delayerId));
                     MutablePropertyValues delayPollerPV = delayPollerDef.getPropertyValues();
-                    delayPollerPV.add("trigger", new CronTrigger(asynRunner.retryCron()));
+                    pollingConsumerPV.add("cronExpress", asynRunner.retryCron());
 
 
                     registry.registerBeanDefinition(channelQueueId, messageGroupQueueDef);

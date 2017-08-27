@@ -99,15 +99,4 @@
         </int:poller>
     </int:delayer>-->
 
-    <bean class="org.springframework.integration.config.ServiceActivatorFactoryBean" id="handler">
-        <property name="targetObject" ref="serviceActivatorDemo"/>
-        <property name="targetMethodName" value="sayHelloByQuartz"/>
-    </bean>
-
-    <bean class="com.pengjinfei.maven.configuration.integration.QuartzPollingConsumer" id="trigger">
-        <constructor-arg index="0" ref="channelDemo"/>
-        <constructor-arg index="1" ref="handler"/>
-        <property name="cronExpress" value="0/10 * * * * ?"/>
-    </bean>
-
 </beans>

@@ -5,6 +5,9 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.Lifecycle;
 import org.springframework.integration.channel.ExecutorChannelInterceptorAware;
+import org.springframework.integration.core.MessageProducer;
+import org.springframework.integration.endpoint.IntegrationConsumer;
+import org.springframework.integration.router.MessageRouter;
 import org.springframework.integration.transaction.IntegrationResourceHolder;
 import org.springframework.messaging.*;
 import org.springframework.messaging.support.ChannelInterceptor;
@@ -26,7 +29,7 @@ import java.util.List;
 @Setter
 @Getter
 @Slf4j
-public class QuartzPollingConsumer extends AbstractQuartzPollingEndpoint {
+public class QuartzPollingConsumer extends AbstractQuartzPollingEndpoint implements IntegrationConsumer {
 
     private final PollableChannel inputChannel;
 
@@ -148,5 +151,18 @@ public class QuartzPollingConsumer extends AbstractQuartzPollingEndpoint {
     @Override
     protected String getResourceKey() {
         return IntegrationResourceHolder.INPUT_CHANNEL;
+    }
+
+    @Override
+    public MessageChannel getOutputChannel() {
+        if (this.handler instanceof MessageProducer) {
+            return ((MessageProducer) this.handler).getOutputChannel();
+        }
+        else if (this.handler instanceof MessageRouter) {
+            return ((MessageRouter) this.handler).getDefaultOutputChannel();
+        }
+        else {
+            return null;
+        }
     }
 }
