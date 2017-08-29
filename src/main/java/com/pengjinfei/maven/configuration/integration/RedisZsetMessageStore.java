@@ -1,8 +1,14 @@
 package com.pengjinfei.maven.configuration.integration;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
@@ -16,6 +22,7 @@ import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -24,6 +31,9 @@ import java.util.Set;
  * @author Pengjinfei
  * @see org.springframework.integration.redis.store.RedisChannelMessageStore
  */
+@Setter
+@Getter
+@Slf4j
 public class RedisZsetMessageStore implements ChannelMessageStore, BeanNameAware, InitializingBean {
 
     private final RedisTemplate<Object, Message<?>> redisTemplate;
@@ -32,23 +42,14 @@ public class RedisZsetMessageStore implements ChannelMessageStore, BeanNameAware
 
     private String beanName;
 
-    private MessageSocreCalculator calculator;
+    private RedisScoreCaculator calculator;
 
-    public MessageSocreCalculator getCalculator() {
-        return calculator;
-    }
-
-    public void setCalculator(MessageSocreCalculator calculator) {
-        this.calculator = calculator;
-    }
-
-    public RedisZsetMessageStore(RedisConnectionFactory connectionFactory,MessageSocreCalculator calculator) {
+    public RedisZsetMessageStore(RedisConnectionFactory connectionFactory) {
         this.redisTemplate = new RedisTemplate<Object, Message<?>>();
         this.redisTemplate.setConnectionFactory(connectionFactory);
         this.redisTemplate.setKeySerializer(new StringRedisSerializer());
         this.redisTemplate.setValueSerializer(new JdkSerializationRedisSerializer());
         this.redisTemplate.afterPropertiesSet();
-        this.calculator=calculator;
     }
 
     public void setValueSerializer(RedisSerializer<?> valueSerializer) {
@@ -98,18 +99,44 @@ public class RedisZsetMessageStore implements ChannelMessageStore, BeanNameAware
 
     @Override
     public MessageGroup addMessageToGroup(Object groupId, Message<?> message) {
-        this.redisTemplate.boundZSetOps(groupId).add(message, calculator.calScore(message));
+        this.redisTemplate.boundZSetOps(groupId).add(message, calculator.score(message));
         return null;
     }
 
     @Override
     public Message<?> pollMessageFromGroup(Object groupId) {
-        Set<Message<?>> messages = this.redisTemplate.opsForZSet().range(groupId, 0, 0);
-        if (CollectionUtils.isEmpty(messages)) {
-            return null;
+        RedisSerializer<Object> keySerializer = (RedisSerializer<Object>) redisTemplate.getKeySerializer();
+        RedisSerializer<Message> valueSerializer = (RedisSerializer<Message>) redisTemplate.getValueSerializer();
+        try {
+            Object execute = redisTemplate.execute(new RedisCallback<Object>() {
+                @Override
+                public Object doInRedis(RedisConnection redisConnection) throws DataAccessException {
+                    redisConnection.multi();
+                    byte[] bytes = keySerializer.serialize(groupId);
+                    redisConnection.zRange(bytes, 0, 0);
+                    redisConnection.zRemRange(bytes, 0, 0);
+                    return redisConnection.exec();
+                }
+
+            });
+            if (execute instanceof List) {
+                List list = (List) execute;
+                Object o = list.get(0);
+                if (o != null) {
+                    Set set = (Set) o;
+                    if (CollectionUtils.isEmpty(set)) {
+                        return null;
+                    }
+                    byte[] bytes = (byte[]) set.iterator().next();
+                    return valueSerializer.deserialize(bytes);
+                } else {
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            log.error("Get message from {} faild.", groupId, e);
         }
-        this.redisTemplate.opsForZSet().removeRange(groupId, 0, 0);
-        return messages.iterator().next();
+        return null;
     }
 
     @Override

@@ -15,8 +15,6 @@ import org.springframework.integration.transaction.IntegrationResourceHolder;
 import org.springframework.integration.transaction.IntegrationResourceHolderSynchronization;
 import org.springframework.integration.transaction.TransactionSynchronizationFactory;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandlingException;
-import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -72,11 +70,12 @@ public abstract class AbstractQuartzPollingEndpoint extends AbstractEndpoint imp
                 }
                 count++;
             } catch (Exception e) {
-                if (e instanceof RuntimeException) {
+               /* if (e instanceof RuntimeException) {
                     throw (RuntimeException) e;
                 } else {
                     throw new MessageHandlingException(new ErrorMessage(e), e);
-                }
+                }*/
+               log.error("Exception occurred in task "+getComponentName()+" .",e);
             }
         }
     }
