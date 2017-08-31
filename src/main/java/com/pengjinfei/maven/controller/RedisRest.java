@@ -24,6 +24,9 @@ public class RedisRest {
     @Autowired
     RedisScript<List> script;
 
+    @Autowired
+    RedisScript<Integer> list2ZseScript;
+
     @PostMapping("/{key}")
     public void addList(@PathVariable("key")String key, @RequestBody List<Person> people) {
         for (Person person : people) {
@@ -35,5 +38,12 @@ public class RedisRest {
     public List<Person> getList(@PathVariable("pre") String pre, @PathVariable("num") String num) {
         Object execute = template.execute(script, Arrays.asList(new Object[]{pre + ":", num}));
         return (List<Person>) execute;
+    }
+
+    @GetMapping("/transfer/{lkey}/{zkey}/{score}")
+    public void list2Zset(@PathVariable("lkey") String lkey,@PathVariable("zkey") String zkey,
+                          @PathVariable("score") String score) {
+        Object execute = template.execute(list2ZseScript, Arrays.asList(new Object[]{lkey, zkey, score}));
+        System.out.println(execute);
     }
 }
