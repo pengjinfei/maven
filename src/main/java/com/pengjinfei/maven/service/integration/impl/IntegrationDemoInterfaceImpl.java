@@ -21,7 +21,7 @@ public class IntegrationDemoInterfaceImpl implements IntegrationDemoInterface {
     @AsynRunner(cron = "0/12 * * * * ?",
             retryCron="0 0/1 * * * ?",
             delayedTime = 20,
-            timeUnit = TimeUnit.MINUTES,
+            timeUnit = TimeUnit.SECONDS,
             insertSqlId = "com.pengjinfei.maven.mapper.PersonMapper.insertSelective",
             failedSqlId = "com.pengjinfei.maven.mapper.PersonMapper.updateAddress")
     public void sayHello(Person person) {
