@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableIntegration
 //@IntegrationComponentScan
 @Slf4j
+@EnableCaching
 @MapperScan(basePackages = "com.pengjinfei.maven.mapper")
 public class Application {
 

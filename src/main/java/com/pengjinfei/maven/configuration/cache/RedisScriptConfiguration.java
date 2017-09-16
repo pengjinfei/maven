@@ -32,4 +32,13 @@ public class RedisScriptConfiguration{
         script.setResultType(Integer.class);
         return script;
     }
+
+    @Bean
+    public RedisScript<List> updateAndDel() {
+        DefaultRedisScript<List> script = new DefaultRedisScript<>();
+        script.setScriptSource(new ResourceScriptSource(new ClassPathResource("lua/addAndDel.lua")));
+        script.setResultType(List.class);
+        return script;
+    }
 }
+

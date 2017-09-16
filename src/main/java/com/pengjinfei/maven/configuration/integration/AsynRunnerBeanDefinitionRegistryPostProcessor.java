@@ -158,8 +158,9 @@ public class AsynRunnerBeanDefinitionRegistryPostProcessor implements BeanDefini
                     String serviceActivatorId = baseName + "_serviceActivator";
                     RootBeanDefinition serviceActivatorDef = new RootBeanDefinition(ServiceActivatorFactoryBean.class);
                     MutablePropertyValues serviceActivatorPV = serviceActivatorDef.getPropertyValues();
-                    serviceActivatorPV.add("targetObject", new RuntimeBeanReference(s));
-                    serviceActivatorPV.add("targetMethodName", methodName);
+                    serviceActivatorPV.add("expressionString", "@" + s + "." + methodName + "(payload)");
+                    //serviceActivatorPV.add("targetObject", new RuntimeBeanReference(s));
+                    //serviceActivatorPV.add("targetMethodName", methodName);
                     ManagedList servcieActivatorChain = new ManagedList();
                     servcieActivatorChain.add(retryAdviceDef);
                     serviceActivatorPV.add("adviceChain", servcieActivatorChain);

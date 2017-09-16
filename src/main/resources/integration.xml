@@ -61,7 +61,7 @@
         <property name="retryContextCache" ref="retryContextCache"/>
     </bean>
 
-    <!--<int:service-activator input-channel="channelDemo" ref="serviceActivatorDemo" method="sayHello">
+    <int:service-activator input-channel="channelDemo" ref="serviceActivatorDemo" method="sayHello">
         <int:poller cron="0/15 * * * * ?" task-executor="poolTaskExecutor">
             <int:transactional synchronization-factory="syncFactory"/>
         </int:poller>
@@ -84,7 +84,7 @@
 
     <int:transaction-synchronization-factory id="syncFactory">
         <int:after-rollback channel="delayedDemo"/>
-    </int:transaction-synchronization-factory>-->
+    </int:transaction-synchronization-factory>
 
     <bean class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory" id="redisConnectionFactory">
         <property name="hostName" value="${spring.redis.host}"/>
